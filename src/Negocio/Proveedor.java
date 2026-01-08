@@ -1,10 +1,10 @@
 package Negocio;
 
 public abstract class Proveedor {
-    protected String id;
-    protected String nombre;
-    protected String telefono;
-    protected String tipoServicio;
+    private String id;
+    public String nombre;
+    private String telefono;
+    private String tipoServicio;
 
     public Proveedor(String id, String nombre, String telefono, String tipoServicio) {
         this.id = id;

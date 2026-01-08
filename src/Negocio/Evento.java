@@ -3,15 +3,15 @@ package Negocio;
 import java.util.Calendar;
 
 public abstract class Evento {
-    protected String id;
-    protected Calendar fechaEvento;
-    protected int horasDuracion;
-    protected String lugar;
-    protected String temaColor;
-    protected int numeroInvitados;
-    protected double presupuestoComida;
-    protected double presupuestoSalon;
-    protected double presupuestoBanda;
+    public String id;
+    public Calendar fechaEvento;
+    private int horasDuracion;
+    private String lugar;
+    private String temaColor;
+    private int numeroInvitados;
+    public double presupuestoComida;
+    public double presupuestoSalon;
+    public double presupuestoBanda;
 
     public Evento(String id, Calendar fechaEvento, int horasDuracion,
                   String lugar, String temaColor, int numeroInvitados,

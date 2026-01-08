@@ -1,6 +1,4 @@
 package Negocio;
-
-
 public class ProveedorBanda extends Proveedor {
     private double costoPorHora;
     private String[] generos;
