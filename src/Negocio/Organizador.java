@@ -15,7 +15,8 @@ public class Organizador {
     private List<Boda> eventosAsociados;
 
     public Organizador(String id, String cedula, String nombre, String especialidad,
-                       int añosExperiencia, String email, String telefono, String tokenSeguridad) {
+                       int añosExperiencia, String email, String telefono, String tokenSeguridad)
+            throws Util.Utilitario.ValidacionException {
         this.id = id;
         setCedula(cedula);  // Usar setter para validación
         this.nombre = nombre;
@@ -38,41 +39,34 @@ public class Organizador {
     public String getTokenSeguridad() { return tokenSeguridad; }
     public List<Boda> getEventosAsociados() { return eventosAsociados; }
 
-    // Setters con validaciones
-    public void setId(String id) { this.id = id; }
-
-    public void setCedula(String cedula) {
+    public void setCedula(String cedula) throws Util.Utilitario.CedulaInvalidaException {
         if (!validarCedula(cedula)) {
-            throw new IllegalArgumentException("Cédula inválida. Debe tener 10 dígitos numéricos.");
+            throw new Util.Utilitario.CedulaInvalidaException("Cédula inválida. Debe tener 10 dígitos numéricos.");
         }
         this.cedula = cedula;
     }
 
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public void setEspecialidad(String especialidad) { this.especialidad = especialidad; }
 
-    public void setAñosExperiencia(int añosExperiencia) {
+    public void setAñosExperiencia(int añosExperiencia) throws Util.Utilitario.NumeroInvalidoException {
         if (añosExperiencia < 0) {
-            throw new IllegalArgumentException("Los años de experiencia no pueden ser negativos");
+            throw new Util.Utilitario.NumeroInvalidoException("Los años de experiencia no pueden ser negativos");
         }
         this.añosExperiencia = añosExperiencia;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(String email) throws Util.Utilitario.EmailInvalidoException {
         if (!validarEmail(email)) {
-            throw new IllegalArgumentException("Email inválido. Debe contener @");
+            throw new Util.Utilitario.EmailInvalidoException("Email inválido. Debe contener @");
         }
         this.email = email;
     }
 
-    public void setTelefono(String telefono) {
+    public void setTelefono(String telefono) throws Util.Utilitario.TelefonoInvalidoException {
         if (!validarTelefono(telefono)) {
-            throw new IllegalArgumentException("Teléfono inválido. Debe tener 10 dígitos numéricos");
+            throw new Util.Utilitario.TelefonoInvalidoException("Teléfono inválido. Debe tener 10 dígitos numéricos");
         }
         this.telefono = telefono;
     }
-
-    public void setTokenSeguridad(String tokenSeguridad) { this.tokenSeguridad = tokenSeguridad; }
 
     // Métodos de validación privados
     private boolean validarEmail(String email) {

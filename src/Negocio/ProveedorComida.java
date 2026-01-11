@@ -26,9 +26,6 @@ public class ProveedorComida extends Proveedor {
     public double getCostoPorPersona() { return costoPorPersona; }
     public String getNombreCatering() { return nombreCatering; }
 
-    public void setNombrePlato(String nombrePlato) { this.nombrePlato = nombrePlato; }
-    public void setCostoPorPersona(double costoPorPersona) { this.costoPorPersona = costoPorPersona; }
-    public void setNombreCatering(String nombreCatering) { this.nombreCatering = nombreCatering; }
 
     @Override
     public String toString() {

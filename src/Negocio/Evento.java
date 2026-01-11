@@ -37,13 +37,4 @@ public abstract class Evento {
     public double getPresupuestoSalon() { return presupuestoSalon; }
     public double getPresupuestoBanda() { return presupuestoBanda; }
 
-    public void setId(String id) { this.id = id; }
-    public void setFechaEvento(Calendar fechaEvento) { this.fechaEvento = fechaEvento; }
-    public void setHorasDuracion(int horasDuracion) { this.horasDuracion = horasDuracion; }
-    public void setLugar(String lugar) { this.lugar = lugar; }
-    public void setTemaColor(String temaColor) { this.temaColor = temaColor; }
-    public void setNumeroInvitados(int numeroInvitados) { this.numeroInvitados = numeroInvitados; }
-    public void setPresupuestoComida(double presupuestoComida) { this.presupuestoComida = presupuestoComida; }
-    public void setPresupuestoSalon(double presupuestoSalon) { this.presupuestoSalon = presupuestoSalon; }
-    public void setPresupuestoBanda(double presupuestoBanda) { this.presupuestoBanda = presupuestoBanda; }
 }

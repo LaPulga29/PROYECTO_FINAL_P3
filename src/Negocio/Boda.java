@@ -24,44 +24,45 @@ public class Boda extends Evento {
     public Boda(String id, Calendar fechaEvento, int horasDuracion,
                 String lugar, String temaColor, int numeroInvitados,
                 double presupuestoComida, double presupuestoSalon, double presupuestoBanda,
-                String tipoCeremonia, String cancionVals, String nombreNovios) {
+                String tipoCeremonia, String cancionVals, String nombreNovios)
+            throws Util.Utilitario.ValidacionException {
         super(id, fechaEvento, horasDuracion, lugar, temaColor,
                 numeroInvitados, presupuestoComida, presupuestoSalon, presupuestoBanda);
 
-        // Validar fecha no pasada (simplificado - el Utilitario ya valida esto)
+        // Validar fecha no pasada
         Calendar hoy = Calendar.getInstance();
         if (fechaEvento.before(hoy)) {
-            throw new IllegalArgumentException("No se puede crear un evento con fecha pasada.");
+            throw new Util.Utilitario.FechaInvalidaException("No se puede crear un evento con fecha pasada.");
         }
 
         // Validar datos numéricos positivos
         if (horasDuracion <= 0) {
-            throw new IllegalArgumentException("Las horas de duración deben ser mayores a 0.");
+            throw new Util.Utilitario.NumeroInvalidoException("Las horas de duración deben ser mayores a 0.");
         }
 
         if (numeroInvitados <= 0) {
-            throw new IllegalArgumentException("El número de invitados debe ser mayor a 0.");
+            throw new Util.Utilitario.NumeroInvalidoException("El número de invitados debe ser mayor a 0.");
         }
 
         if (presupuestoComida < 0) {
-            throw new IllegalArgumentException("El presupuesto de comida no puede ser negativo.");
+            throw new Util.Utilitario.NumeroInvalidoException("El presupuesto de comida no puede ser negativo.");
         }
 
         if (presupuestoSalon < 0) {
-            throw new IllegalArgumentException("El presupuesto de salón no puede ser negativo.");
+            throw new Util.Utilitario.NumeroInvalidoException("El presupuesto de salón no puede ser negativo.");
         }
 
         if (presupuestoBanda < 0) {
-            throw new IllegalArgumentException("El presupuesto de banda no puede ser negativo.");
+            throw new Util.Utilitario.NumeroInvalidoException("El presupuesto de banda no puede ser negativo.");
         }
 
         // Validar datos de texto
         if (tipoCeremonia == null || tipoCeremonia.trim().isEmpty()) {
-            throw new IllegalArgumentException("El tipo de ceremonia es requerido.");
+            throw new Util.Utilitario.TextoVacioException("El tipo de ceremonia es requerido.");
         }
 
         if (nombreNovios == null || nombreNovios.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre de los novios es requerido.");
+            throw new Util.Utilitario.TextoVacioException("El nombre de los novios es requerido.");
         }
 
         this.tipoCeremonia = tipoCeremonia;
@@ -81,16 +82,30 @@ public class Boda extends Evento {
 
     // Getters y Setters
     public String getTipoCeremonia() { return tipoCeremonia; }
-    public void setTipoCeremonia(String tipoCeremonia) { this.tipoCeremonia = tipoCeremonia; }
+    public void setTipoCeremonia(String tipoCeremonia) throws Util.Utilitario.TextoVacioException {
+        if (tipoCeremonia == null || tipoCeremonia.trim().isEmpty()) {
+            throw new Util.Utilitario.TextoVacioException("El tipo de ceremonia no puede estar vacío");
+        }
+        this.tipoCeremonia = tipoCeremonia;
+    }
 
     public String getCancionVals() { return cancionVals; }
-    public void setCancionVals(String cancionVals) { this.cancionVals = cancionVals; }
+    public void setCancionVals(String cancionVals) {
+        this.cancionVals = cancionVals;
+    }
 
     public String getNombreNovios() { return nombreNovios; }
-    public void setNombreNovios(String nombreNovios) { this.nombreNovios = nombreNovios; }
+    public void setNombreNovios(String nombreNovios) throws Util.Utilitario.TextoVacioException {
+        if (nombreNovios == null || nombreNovios.trim().isEmpty()) {
+            throw new Util.Utilitario.TextoVacioException("El nombre de los novios no puede estar vacío");
+        }
+        this.nombreNovios = nombreNovios;
+    }
 
     public Organizador getOrganizador() { return organizador; }
-    public void setOrganizador(Organizador organizador) { this.organizador = organizador; }
+    public void setOrganizador(Organizador organizador) {
+        this.organizador = organizador;
+    }
 
     public List<Proveedor> getProveedoresContratados() { return proveedoresContratados; }
     public void setProveedoresContratados(List<Proveedor> proveedoresContratados) {
@@ -114,52 +129,54 @@ public class Boda extends Evento {
     }
 
     public boolean isProformaAceptada() { return proformaAceptada; }
-    public void setProformaAceptada(boolean proformaAceptada) { this.proformaAceptada = proformaAceptada; }
+    public void setProformaAceptada(boolean proformaAceptada) {
+        this.proformaAceptada = proformaAceptada;
+    }
 
     public int getAsistentesReales() { return asistentesReales; }
-    public void setAsistentesReales(int asistentesReales) {
+    public void setAsistentesReales(int asistentesReales) throws Util.Utilitario.NumeroInvalidoException {
         if (asistentesReales < 0) {
-            throw new IllegalArgumentException("Los asistentes reales no pueden ser negativos.");
+            throw new Util.Utilitario.NumeroInvalidoException("Los asistentes reales no pueden ser negativos.");
         }
         this.asistentesReales = asistentesReales;
     }
 
     public double getGastoRealComida() { return gastoRealComida; }
-    public void setGastoRealComida(double gastoRealComida) {
+    public void setGastoRealComida(double gastoRealComida) throws Util.Utilitario.NumeroInvalidoException {
         if (gastoRealComida < 0) {
-            throw new IllegalArgumentException("El gasto real de comida no puede ser negativo.");
+            throw new Util.Utilitario.NumeroInvalidoException("El gasto real de comida no puede ser negativo.");
         }
         this.gastoRealComida = gastoRealComida;
     }
 
     public double getGastoRealSalon() { return gastoRealSalon; }
-    public void setGastoRealSalon(double gastoRealSalon) {
+    public void setGastoRealSalon(double gastoRealSalon) throws Util.Utilitario.NumeroInvalidoException {
         if (gastoRealSalon < 0) {
-            throw new IllegalArgumentException("El gasto real de salón no puede ser negativo.");
+            throw new Util.Utilitario.NumeroInvalidoException("El gasto real de salón no puede ser negativo.");
         }
         this.gastoRealSalon = gastoRealSalon;
     }
 
     public double getGastoRealBanda() { return gastoRealBanda; }
-    public void setGastoRealBanda(double gastoRealBanda) {
+    public void setGastoRealBanda(double gastoRealBanda) throws Util.Utilitario.NumeroInvalidoException {
         if (gastoRealBanda < 0) {
-            throw new IllegalArgumentException("El gasto real de banda no puede ser negativo.");
+            throw new Util.Utilitario.NumeroInvalidoException("El gasto real de banda no puede ser negativo.");
         }
         this.gastoRealBanda = gastoRealBanda;
     }
 
     public int getHorasRealesSalon() { return horasRealesSalon; }
-    public void setHorasRealesSalon(int horasRealesSalon) {
+    public void setHorasRealesSalon(int horasRealesSalon) throws Util.Utilitario.NumeroInvalidoException {
         if (horasRealesSalon < 0) {
-            throw new IllegalArgumentException("Las horas reales de salón no pueden ser negativas.");
+            throw new Util.Utilitario.NumeroInvalidoException("Las horas reales de salón no pueden ser negativas.");
         }
         this.horasRealesSalon = horasRealesSalon;
     }
 
     public int getHorasRealesBanda() { return horasRealesBanda; }
-    public void setHorasRealesBanda(int horasRealesBanda) {
+    public void setHorasRealesBanda(int horasRealesBanda) throws Util.Utilitario.NumeroInvalidoException {
         if (horasRealesBanda < 0) {
-            throw new IllegalArgumentException("Las horas reales de banda no pueden ser negativas.");
+            throw new Util.Utilitario.NumeroInvalidoException("Las horas reales de banda no pueden ser negativas.");
         }
         this.horasRealesBanda = horasRealesBanda;
     }
@@ -174,17 +191,6 @@ public class Boda extends Evento {
         return getPresupuestoComida() + getPresupuestoSalon() + getPresupuestoBanda();
     }
 
-    // MÉTODO PARA VERIFICAR SOBRECUPO
-    public boolean haySobrecupo(ProveedorSalon salon) {
-        if (salon == null) return false;
-        return asistentesReales > salon.getCapacidadMaxima();
-    }
-
-    // MÉTODO PARA CALCULAR PERSONAS EXCEDENTES
-    public int getPersonasExcedentes(ProveedorSalon salon) {
-        if (salon == null) return 0;
-        return Math.max(0, asistentesReales - salon.getCapacidadMaxima());
-    }
 
     public void contratarProveedor(Proveedor proveedor) {
         if (!proveedoresContratados.contains(proveedor)) {

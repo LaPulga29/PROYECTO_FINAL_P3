@@ -20,8 +20,4 @@ public abstract class Proveedor {
     public String getTelefono() { return telefono; }
     public String getTipoServicio() { return tipoServicio; }
 
-    public void setId(String id) { this.id = id; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public void setTelefono(String telefono) { this.telefono = telefono; }
-    public void setTipoServicio(String tipoServicio) { this.tipoServicio = tipoServicio; }
 }

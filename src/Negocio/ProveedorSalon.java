@@ -26,10 +26,6 @@ public class ProveedorSalon extends Proveedor {
     public int getCapacidadMaxima() { return capacidadMaxima; }
     public double getCostoPorHora() { return costoPorHora; }
 
-    public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
-    public void setCapacidadMaxima(int capacidadMaxima) { this.capacidadMaxima = capacidadMaxima; }
-    public void setCostoPorHora(double costoPorHora) { this.costoPorHora = costoPorHora; }
-
     @Override
     public String toString() {
         return "Salón: " + nombre + " (" + ubicacion + ") - Capacidad: " + capacidadMaxima +

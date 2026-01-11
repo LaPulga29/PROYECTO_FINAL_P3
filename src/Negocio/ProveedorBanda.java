@@ -18,9 +18,6 @@ public class ProveedorBanda extends Proveedor {
     public double getCostoPorHora() { return costoPorHora; }
     public String[] getGeneros() { return generos; }
 
-    public void setCostoPorHora(double costoPorHora) { this.costoPorHora = costoPorHora; }
-    public void setGeneros(String[] generos) { this.generos = generos; }
-
     @Override
     public String toString() {
         return "Banda: " + nombre + " - Costo/hora: $" + costoPorHora;

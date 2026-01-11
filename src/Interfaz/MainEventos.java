@@ -14,16 +14,36 @@ public class MainEventos {
 
         while (!salir) {
             utilitario.mostrarMenuPrincipal();
-            int opcion = utilitario.leerEntero();
+
+            int opcion = 0;
+            boolean opcionValida = false;
+
+            // MANEJO DE EXCEPCIÓN PARA ENTRADA INVÁLIDA
+            while (!opcionValida) {
+                try {
+                    opcion = utilitario.leerEntero();
+                    opcionValida = true;
+                } catch (Util.Utilitario.EntradaInvalidaException e) {
+                    System.out.println("❌ ERROR: " + e.getMessage() + ". Intente nuevamente.");
+                    System.out.print("Seleccione una opción (1-6): ");
+                }
+            }
 
             switch (opcion) {
                 case 1:
-                    utilitario.menuGestionarOrganizadores();
+                    // MENÚ 1: GESTIÓN DE ORGANIZADORES
+                    try {
+                        utilitario.menuGestionarOrganizadores();
+                    } catch (Util.Utilitario.EntradaInvalidaException e) {
+                        System.out.println("❌ Error en menú organizadores: " + e.getMessage());
+                    }
                     break;
                 case 2:
+                    // MENÚ 2: GESTIÓN DE EVENTOS
                     utilitario.menuGestionarEventos();
                     break;
                 case 3:
+                    // MENÚ 3: GESTIÓN DE PROVEEDORES
                     utilitario.menuGestionarProveedores();
                     break;
                 case 4:
@@ -54,7 +74,7 @@ public class MainEventos {
                     System.out.println("¡Gracias por usar el sistema!");
                     break;
                 default:
-                    System.out.println("Opción inválida. Intente nuevamente.");
+                    System.out.println("❌ Opción inválida. Ingrese un número del 1 al 6.");
             }
         }
     }
