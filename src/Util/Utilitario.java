@@ -5,6 +5,7 @@ import java.util.GregorianCalendar;
 
 public class Utilitario {
     private static final double IVA = 0.15;
+    private static Negocio.Organizador Organizador;
     private int idProveedorCounter = 2000;
     private int idOrganizadorCounter = 3000;
 
@@ -43,14 +44,14 @@ public class Utilitario {
         public TelefonoInvalidoException(String mensaje) { super(mensaje); }
     }
 
-    public static class TokenInvalidoException extends ValidacionException {
-        public TokenInvalidoException(String mensaje) { super(mensaje); }
-    }
-
     public static class IdDuplicadoException extends ValidacionException {
         public IdDuplicadoException(String mensaje) { super(mensaje); }
     }
 
+
+    public static class OrganizadorNoEncontradoException extends ValidacionException {
+        public OrganizadorNoEncontradoException(String mensaje) { super(mensaje); }
+    }
 
     public static class EntradaInvalidaException extends ValidacionException {
         public EntradaInvalidaException(String mensaje) { super(mensaje); }
@@ -93,7 +94,7 @@ public class Utilitario {
         }
     }
 
-    private void validarTelefonoConExcepcion(String telefono) throws TelefonoInvalidoException {
+    public void validarTelefonoConExcepcion(String telefono) throws TelefonoInvalidoException {
         if (telefono == null || telefono.trim().isEmpty()) {
             throw new TelefonoInvalidoException("El teléfono no puede estar vacío");
         }
@@ -107,7 +108,7 @@ public class Utilitario {
         }
     }
 
-    private void validarCedulaConExcepcion(String cedula, boolean verificarDuplicado) throws CedulaInvalidaException {
+    public void validarCedulaConExcepcion(String cedula, boolean verificarDuplicado) throws CedulaInvalidaException {
         if (cedula == null || cedula.trim().isEmpty()) {
             throw new CedulaInvalidaException("La cédula no puede estar vacía");
         }
@@ -177,19 +178,6 @@ public class Utilitario {
                     throw new IdDuplicadoException("Ya existe un proveedor con el ID: " + id);
                 }
             }
-        }
-    }
-
-    private void validarTokenConExcepcion(String token) throws TokenInvalidoException {
-        boolean tokenValido = false;
-        for (Organizador org : organizadores) {
-            if (org.getTokenSeguridad().equals(token)) {
-                tokenValido = true;
-                break;
-            }
-        }
-        if (!tokenValido) {
-            throw new TokenInvalidoException("Token de autenticación inválido");
         }
     }
 
@@ -349,7 +337,7 @@ public class Utilitario {
             while (!entradaValida) {
                 try {
                     System.out.print("Años de experiencia: ");
-                    experiencia = leerEntero(); // Cambié de leerSoloNumero a leerEntero
+                    experiencia = leerEntero();
                     if (experiencia < 0) {
                         throw new NumeroInvalidoException("Los años de experiencia no pueden ser negativos");
                     }
@@ -388,15 +376,12 @@ public class Utilitario {
                 }
             }
 
-            System.out.print("Token de seguridad: ");
-            String token = scanner.nextLine();
-            validarTextoConExcepcion(token, "Token de seguridad");
-
+            // Eliminamos el token
             String id = "ORG" + (++idOrganizadorCounter);
 
-            // Crear organizador
+            // Crear organizador SIN TOKEN
             Organizador org = new Organizador(id, cedula, nombre, especialidad,
-                    experiencia, email, telefono, token);
+                    experiencia, email, telefono);
             organizadores.add(org);
             System.out.println("✅ Organizador agregado exitosamente. ID: " + id);
 
@@ -405,8 +390,19 @@ public class Utilitario {
             System.out.println("El organizador no se pudo agregar.");
         } catch (Exception e) {
             System.out.println("❌ ERROR INESPERADO: " + e.getMessage());
-            e.printStackTrace();
         }
+    }
+
+    private Organizador obtenerOrganizadorPorCedula(String cedula) throws OrganizadorNoEncontradoException {
+        for (Organizador org : organizadores) {
+            if (org.getCedula().equals(cedula)) {
+                return org;
+            }
+        }
+        throw new OrganizadorNoEncontradoException(
+                "Organizador con cédula " + cedula + " no encontrado. " +
+                        "Debe estar registrado primero en el sistema."
+        );
     }
 
     private void buscarOrganizadorPorNombre() {
@@ -465,20 +461,27 @@ public class Utilitario {
         }
 
         try {
-            System.out.print("\nIngrese su token de autenticación: ");
-            String token = scanner.nextLine();
-            validarTokenConExcepcion(token);
+            // SOLICITAR CÉDULA EN VEZ DE TOKEN
+            System.out.print("\nIngrese su cédula (10 dígitos): ");
+            String cedula = scanner.nextLine().trim();
 
+            // Validar formato de cédula
+            validarCedulaConExcepcion(cedula, false); // No verificar duplicado
+
+            // Buscar organizador por cédula
             Organizador orgAutenticado = null;
             for (Organizador org : organizadores) {
-                if (org.getTokenSeguridad().equals(token)) {
+                if (org.getCedula().equals(cedula)) {
                     orgAutenticado = org;
                     break;
                 }
             }
 
             if (orgAutenticado == null) {
-                throw new TokenInvalidoException("Token no asociado a ningún organizador");
+                throw new OrganizadorNoEncontradoException(
+                        "Cédula " + cedula + " no encontrada en el sistema. " +
+                                "Debe registrarse como organizador primero."
+                );
             }
 
             System.out.println("✓ Autenticado como: " + orgAutenticado.getNombre());
@@ -490,47 +493,173 @@ public class Utilitario {
                 System.out.println("2. Listar Todas las Bodas");
                 System.out.println("3. Eliminar Evento");
                 System.out.println("4. Buscar Boda por Fecha");
-                System.out.println("5. Volver al Menú Principal");
+                System.out.println("5. Editar Evento");
+                System.out.println("6. Volver al Menú Principal");
                 System.out.print("Seleccione una opción: ");
-                int opcion = leerEntero();
-                switch (opcion) {
-                    case 1:
-                        crearBoda(orgAutenticado);
-                        break;
-                    case 2:
-                        if (bodas.isEmpty()) {
-                            System.out.println("\nNo hay bodas registradas.");
-                        } else {
-                            listarBodas();
-                        }
-                        break;
-                    case 3:
-                        if (bodas.isEmpty()) {
-                            System.out.println("\nNo hay bodas registradas para eliminar.");
-                        } else {
-                            eliminarEvento();
-                        }
-                        break;
-                    case 4:
-                        if (bodas.isEmpty()) {
-                            System.out.println("\nNo hay bodas registradas para buscar.");
-                        } else {
-                            buscarBodaPorFecha();
-                        }
-                        break;
-                    case 5:
-                        volver = true;
-                        break;
-                    default:
-                        System.out.println("Opción inválida.");
+
+                try {
+                    int opcion = leerEntero();
+                    switch (opcion) {
+                        case 1:
+                            crearBoda(orgAutenticado);
+                            break;
+                        case 2:
+                            if (bodas.isEmpty()) {
+                                System.out.println("\nNo hay bodas registradas.");
+                            } else {
+                                listarBodas();
+                            }
+                            break;
+                        case 3:
+                            if (bodas.isEmpty()) {
+                                System.out.println("\nNo hay bodas registradas para eliminar.");
+                            } else {
+                                eliminarEvento();
+                            }
+                            break;
+                        case 4:
+                            if (bodas.isEmpty()) {
+                                System.out.println("\nNo hay bodas registradas para buscar.");
+                            } else {
+                                buscarBodaPorFecha();
+                            }
+                            break;
+                        case 5:
+                            if (bodas.isEmpty()) {
+                                System.out.println("\nNo hay bodas registradas para editar.");
+                            } else {
+                                editarEvento();
+                            }
+                            break;
+                        case 6:
+                            volver = true;
+                            break;
+                        default:
+                            System.out.println("Opción inválida.");
+                    }
+                } catch (EntradaInvalidaException e) {
+                    System.out.println("❌ ERROR: " + e.getMessage());
                 }
             }
-        } catch (TokenInvalidoException e) {
+        } catch (CedulaInvalidaException e) {
+            System.out.println("❌ ERROR DE CÉDULA: " + e.getMessage());
+        } catch (OrganizadorNoEncontradoException e) {
             System.out.println("❌ ERROR DE AUTENTICACIÓN: " + e.getMessage());
+            System.out.println("\nOrganizadores registrados:");
+            if (organizadores.isEmpty()) {
+                System.out.println("No hay organizadores registrados.");
+            } else {
+                for (Organizador org : organizadores) {
+                    System.out.println("- " + org.getNombre() + " | Cédula: " + org.getCedula());
+                }
+            }
         } catch (ValidacionException e) {
             System.out.println("❌ ERROR: " + e.getMessage());
         }
     }
+
+    public void menuGestionarProveedores() {
+        if (organizadores.isEmpty()) {
+            System.out.println("\nDebe registrar al menos un organizador primero.");
+            System.out.println("Use la opción 1 para agregar un organizador.");
+            return;
+        }
+
+        try {
+            // SOLICITAR CÉDULA EN VEZ DE TOKEN
+            System.out.print("\nIngrese su cédula (10 dígitos): ");
+            String cedula = scanner.nextLine().trim();
+
+            // Validar formato de cédula
+            validarCedulaConExcepcion(cedula, false); // No verificar duplicado
+
+            // Buscar organizador por cédula
+            Organizador orgAutenticado = null;
+            for (Organizador org : organizadores) {
+                if (org.getCedula().equals(cedula)) {
+                    orgAutenticado = org;
+                    break;
+                }
+            }
+
+            if (orgAutenticado == null) {
+                throw new OrganizadorNoEncontradoException(
+                        "Cédula " + cedula + " no encontrada en el sistema. " +
+                                "Debe registrarse como organizador primero."
+                );
+            }
+
+            System.out.println("✓ Autenticado como: " + orgAutenticado.getNombre());
+            boolean volver = false;
+            while (!volver) {
+                System.out.println("\n=== GESTIÓN DE PROVEEDORES ===");
+                System.out.println("Organizador: " + orgAutenticado.getNombre());
+                System.out.println("1. Ingresar Proveedor (elige tipo)");
+                System.out.println("2. Listar Proveedores");
+                System.out.println("3. Eliminar Proveedor");
+                System.out.println("4. Buscar Proveedores por Costo");
+                System.out.println("5. Buscar Proveedores por Tipo");
+                System.out.println("6. Volver al Menú Principal");
+                System.out.print("Seleccione una opción: ");
+
+                try {
+                    int opcion = leerEntero();
+                    switch (opcion) {
+                        case 1:
+                            ingresarProveedor();
+                            break;
+                        case 2:
+                            listarProveedores();
+                            break;
+                        case 3:
+                            if (proveedores.isEmpty()) {
+                                System.out.println("\nNo hay proveedores registrados para eliminar.");
+                            } else {
+                                eliminarProveedor();
+                            }
+                            break;
+                        case 4:
+                            if (proveedores.isEmpty()) {
+                                System.out.println("\nNo hay proveedores registrados para buscar.");
+                            } else {
+                                buscarProveedoresPorCosto();
+                            }
+                            break;
+                        case 5:
+                            if (proveedores.isEmpty()) {
+                                System.out.println("\nNo hay proveedores registrados para buscar.");
+                            } else {
+                                buscarProveedoresPorTipo();
+                            }
+                            break;
+                        case 6:
+                            volver = true;
+                            break;
+                        default:
+                            System.out.println("Opción inválida.");
+                    }
+                } catch (EntradaInvalidaException e) {
+                    System.out.println("❌ ERROR: " + e.getMessage());
+                }
+            }
+        } catch (CedulaInvalidaException e) {
+            System.out.println("❌ ERROR DE CÉDULA: " + e.getMessage());
+        } catch (OrganizadorNoEncontradoException e) {
+            System.out.println("❌ ERROR DE AUTENTICACIÓN: " + e.getMessage());
+            System.out.println("\nOrganizadores registrados:");
+            if (organizadores.isEmpty()) {
+                System.out.println("No hay organizadores registrados.");
+            } else {
+                for (Organizador org : organizadores) {
+                    System.out.println("- " + org.getNombre() + " | Cédula: " + org.getCedula());
+                }
+            }
+        } catch (ValidacionException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+        }
+    }
+
+
     public void crearBoda(Organizador organizador) {
         System.out.println("\n=== CREAR NUEVA BODA ===");
 
@@ -639,7 +768,7 @@ public class Utilitario {
                     invitados, presupuestoComida, presupuestoSalon, presupuestoBanda,
                     tipoCeremonia, cancionVals, nombreNovios);
 
-            boda.setOrganizador(organizador);
+            boda.setOrganizador(Util.Utilitario.Organizador);
             organizador.agregarEvento(boda);
             bodas.add(boda);
             System.out.println("✅ Boda creada exitosamente!");
@@ -862,33 +991,88 @@ public class Utilitario {
                     break;
                 }
             }
+
             if (bodaEliminar != null) {
+                // Validar que no tenga proforma aceptada
+                if (bodaEliminar.isProformaAceptada()) {
+                    throw new EventoConProformaException(
+                            "No se puede eliminar un evento con proforma aceptada. " +
+                                    "Boda: " + bodaEliminar.getNombreNovios() +
+                                    " - Fecha: " + formatearFecha(bodaEliminar.getFechaEvento())
+                    );
+                }
+
+                // Eliminar la boda del organizador asociado
+                Organizador organizador = bodaEliminar.getOrganizador();
+                if (organizador != null) {
+                    organizador.getEventosAsociados().remove(bodaEliminar);
+                }
+
                 bodas.remove(bodaEliminar);
                 System.out.println("✅ Boda eliminada exitosamente.");
             } else {
                 System.out.println("✗ Boda no encontrada.");
             }
-        } catch (TextoVacioException e) {
+        } catch (ValidacionException e) {
             System.out.println("❌ ERROR: " + e.getMessage());
         }
     }
-
     private void buscarBodaPorFecha() {
         try {
             System.out.println("\nIngrese la fecha a buscar:");
             Calendar fecha = leerFechaConValidacion();
             List<Boda> resultado = filtrarBodasPorFecha(bodas, fecha);
+
             if (resultado.isEmpty()) {
                 System.out.println("No hay bodas en esa fecha.");
             } else {
-                System.out.println("\n=== BODAS ENCONTRADAS ===");
+                System.out.println("\n" + "=".repeat(60));
+                System.out.println("=== BODAS ENCONTRADAS PARA " + formatearFecha(fecha) + " ===");
+
                 for (Boda boda : resultado) {
-                    System.out.println("ID: " + boda.getId());
-                    System.out.println("Novios: " + boda.getNombreNovios());
-                    System.out.println("Lugar: " + boda.getLugar());
-                    System.out.println("Organizador: " + boda.getOrganizador().getNombre());
-                    System.out.println("------------------------");
+                    System.out.println("\n" + "-".repeat(60));
+                    System.out.println("📋 DATOS PRINCIPALES:");
+                    System.out.println("   ID: " + boda.getId());
+                    System.out.println("   Novios: " + boda.getNombreNovios());
+                    System.out.println("   Fecha: " + formatearFecha(boda.getFechaEvento()));
+                    System.out.println("   Lugar: " + boda.getLugar());
+                    System.out.println("   Tema de Color: " + boda.getTemaColor());
+                    System.out.println("   Horas Duración: " + boda.getHorasDuracion());
+                    System.out.println("   Invitados: " + boda.getNumeroInvitados());
+
+                    System.out.println("\n🎯 DATOS SECUNDARIOS:");
+                    System.out.println("   Tipo Ceremonia: " + boda.getTipoCeremonia());
+                    System.out.println("   Canción del Vals: " +
+                            (boda.getCancionVals() != null ? boda.getCancionVals() : "No definida"));
+
+                    System.out.println("\n💰 PRESUPUESTOS:");
+                    System.out.println("   Comida: $" + String.format("%.2f", boda.getPresupuestoComida()));
+                    System.out.println("   Salón: $" + String.format("%.2f", boda.getPresupuestoSalon()));
+                    System.out.println("   Banda: $" + String.format("%.2f", boda.getPresupuestoBanda()));
+                    System.out.println("   TOTAL: $" + String.format("%.2f", boda.getPresupuestoTotal()));
+
+                    System.out.println("\n👨‍💼 ORGANIZADOR:");
+                    Organizador org = boda.getOrganizador();
+                    if (org != null) {
+                        System.out.println("   Nombre: " + org.getNombre());
+                        System.out.println("   Cédula: " + org.getCedula());
+                        System.out.println("   Especialidad: " + org.getEspecialidad());
+                        System.out.println("   Email: " + org.getEmail());
+                        System.out.println("   Teléfono: " + org.getTelefono());
+                        System.out.println("   Experiencia: " + org.getAñosExperiencia() + " años");
+                    } else {
+                        System.out.println("   ⚠ No asignado");
+                    }
+
+                    System.out.println("\n📝 ESTADO:");
+                    System.out.println("   Proforma Aceptada: " + (boda.isProformaAceptada() ? "✅ Sí" : "❌ No"));
+                    if (boda.isProformaAceptada()) {
+                        System.out.println("   Proveedores Contratados: " + boda.getProveedoresContratados().size());
+                    }
+
+                    System.out.println("-".repeat(60));
                 }
+                System.out.println("=".repeat(60));
             }
         } catch (Exception e) {
             System.out.println("❌ ERROR: " + e.getMessage());
@@ -896,84 +1080,6 @@ public class Utilitario {
     }
 
     // MENÚ 3: GESTIONAR PROVEEDORES
-    public void menuGestionarProveedores() {
-        if (organizadores.isEmpty()) {
-            System.out.println("\nDebe registrar al menos un organizador primero.");
-            System.out.println("Use la opción 1 para agregar un organizador.");
-            return;
-        }
-
-        try {
-            System.out.print("\nIngrese su token de autenticación: ");
-            String token = scanner.nextLine();
-            validarTokenConExcepcion(token);
-
-            Organizador orgAutenticado = null;
-            for (Organizador org : organizadores) {
-                if (org.getTokenSeguridad().equals(token)) {
-                    orgAutenticado = org;
-                    break;
-                }
-            }
-
-            if (orgAutenticado == null) {
-                throw new TokenInvalidoException("Token no asociado a ningún organizador");
-            }
-
-            System.out.println("✓ Autenticado como: " + orgAutenticado.getNombre());
-            boolean volver = false;
-            while (!volver) {
-                System.out.println("\n=== GESTIÓN DE PROVEEDORES ===");
-                System.out.println("1. Ingresar Proveedor (elige tipo)");
-                System.out.println("2. Listar Proveedores");
-                System.out.println("3. Eliminar Proveedor");
-                System.out.println("4. Buscar Proveedores por Costo");
-                System.out.println("5. Buscar Proveedores por Tipo");
-                System.out.println("6. Volver al Menú Principal");
-                System.out.print("Seleccione una opción: ");
-
-                int opcion = leerEntero();
-                switch (opcion) {
-                    case 1:
-                        ingresarProveedor();
-                        break;
-                    case 2:
-                        listarProveedores();
-                        break;
-                    case 3:
-                        if (proveedores.isEmpty()) {
-                            System.out.println("\nNo hay proveedores registrados para eliminar.");
-                        } else {
-                            eliminarProveedor();
-                        }
-                        break;
-                    case 4:
-                        if (proveedores.isEmpty()) {
-                            System.out.println("\nNo hay proveedores registrados para buscar.");
-                        } else {
-                            buscarProveedoresPorCosto();
-                        }
-                        break;
-                    case 5:
-                        if (proveedores.isEmpty()) {
-                            System.out.println("\nNo hay proveedores registrados para buscar.");
-                        } else {
-                            buscarProveedoresPorTipo();
-                        }
-                        break;
-                    case 6:
-                        volver = true;
-                        break;
-                    default:
-                        System.out.println("Opción inválida.");
-                }
-            }
-        } catch (TokenInvalidoException e) {
-            System.out.println("❌ ERROR DE AUTENTICACIÓN: " + e.getMessage());
-        } catch (ValidacionException e) {
-            System.out.println("❌ ERROR: " + e.getMessage());
-        }
-    }
 
     private String leerTelefonoValido() {
         String telefono;
@@ -1134,7 +1240,6 @@ public class Utilitario {
             e.printStackTrace();
         }
     }
-
     private void listarProveedores() {
         System.out.println("\n=== LISTA DE PROVEEDORES ===");
 
@@ -1148,6 +1253,7 @@ public class Utilitario {
         for (Proveedor p : proveedores) {
             if (p instanceof ProveedorComida) {
                 System.out.println(p);
+                mostrarFechasOcupadasProveedor(p);
                 hayComida = true;
             }
         }
@@ -1158,6 +1264,7 @@ public class Utilitario {
         for (Proveedor p : proveedores) {
             if (p instanceof ProveedorSalon) {
                 System.out.println(p);
+                mostrarFechasOcupadasProveedor(p);
                 haySalon = true;
             }
         }
@@ -1168,12 +1275,49 @@ public class Utilitario {
         for (Proveedor p : proveedores) {
             if (p instanceof ProveedorBanda) {
                 System.out.println(p);
+                mostrarFechasOcupadasProveedor(p);
                 hayBanda = true;
             }
         }
         if (!hayBanda) System.out.println("No hay proveedores de banda.");
     }
 
+    private void mostrarFechasOcupadasProveedor(Proveedor proveedor) {
+        List<Calendar> fechasOcupadas = new ArrayList<>();
+
+        for (Boda boda : bodas) {
+            if (boda.isProformaAceptada() &&
+                    boda.getProveedoresContratados().contains(proveedor)) {
+                fechasOcupadas.add(boda.getFechaEvento());
+            }
+        }
+
+        if (!fechasOcupadas.isEmpty()) {
+            System.out.print("   📅 Fechas ocupadas: ");
+
+            // Ordenar fechas
+            Collections.sort(fechasOcupadas, (f1, f2) -> f1.compareTo(f2));
+
+            // Mostrar solo las próximas 3 fechas
+            int contador = 0;
+            for (Calendar fecha : fechasOcupadas) {
+                if (contador < 3) {
+                    System.out.print(formatearFecha(fecha));
+                    if (contador < fechasOcupadas.size() - 1 && contador < 2) {
+                        System.out.print(", ");
+                    }
+                    contador++;
+                }
+            }
+
+            if (fechasOcupadas.size() > 3) {
+                System.out.print(" y " + (fechasOcupadas.size() - 3) + " más");
+            }
+            System.out.println();
+        } else {
+            System.out.println("   ✅ Disponible (sin contratos activos)");
+        }
+    }
     public void eliminarProveedor() {
         try {
             System.out.print("\nIngrese el ID del proveedor a eliminar: ");
@@ -1187,13 +1331,50 @@ public class Utilitario {
                     break;
                 }
             }
+
             if (proveedorEliminar != null) {
+                // Validar que el proveedor no esté contratado en eventos futuros
+                List<Boda> bodasConProveedor = new ArrayList<>();
+                Calendar hoy = Calendar.getInstance();
+
+                for (Boda boda : bodas) {
+                    if (boda.isProformaAceptada() &&
+                            boda.getProveedoresContratados().contains(proveedorEliminar) &&
+                            (boda.getFechaEvento().after(hoy) || mismasFechas(boda.getFechaEvento(), hoy))) {
+                        bodasConProveedor.add(boda);
+                    }
+                }
+
+                if (!bodasConProveedor.isEmpty()) {
+                    System.out.println("\n❌ No se puede eliminar el proveedor porque está contratado en:");
+                    for (Boda boda : bodasConProveedor) {
+                        System.out.println("   • " + boda.getNombreNovios() +
+                                " - Fecha: " + formatearFecha(boda.getFechaEvento()) +
+                                " (" + (boda.getFechaEvento().before(hoy) ? "PASADA" : "FUTURA") + ")");
+                    }
+
+                    System.out.print("\n¿Desea ver las fechas específicas? (S/N): ");
+                    String respuesta = scanner.nextLine().trim().toLowerCase();
+
+                    if (respuesta.equals("s")) {
+                        System.out.println("\nFechas en las que está ocupado:");
+                        for (Boda boda : bodasConProveedor) {
+                            System.out.println("   • " + formatearFecha(boda.getFechaEvento()) +
+                                    " - " + boda.getNombreNovios());
+                        }
+                    }
+
+                    throw new ProveedorContratadoException(
+                            "No se puede eliminar un proveedor contratado en eventos futuros o actuales."
+                    );
+                }
+
                 proveedores.remove(proveedorEliminar);
                 System.out.println("✅ Proveedor eliminado exitosamente.");
             } else {
                 System.out.println("✗ Proveedor no encontrado.");
             }
-        } catch (TextoVacioException e) {
+        } catch (ValidacionException e) {
             System.out.println("❌ ERROR: " + e.getMessage());
         }
     }
@@ -1383,6 +1564,182 @@ public class Utilitario {
             }
         }
         return false;
+    }
+
+    private void editarEvento() {
+        try {
+            if (bodas.isEmpty()) {
+                System.out.println("\nNo hay bodas registradas para editar.");
+                return;
+            }
+
+            System.out.println("\n=== EDITAR EVENTO ===");
+            System.out.println("Seleccione la boda a editar:");
+
+            for (int i = 0; i < bodas.size(); i++) {
+                Boda boda = bodas.get(i);
+                String estadoProforma = boda.isProformaAceptada() ? "✓ CONTRATADA" : "✗ SIN CONTRATO";
+                System.out.println((i + 1) + ". " + boda.getNombreNovios() +
+                        " - Fecha: " + formatearFecha(boda.getFechaEvento()) +
+                        " - " + estadoProforma);
+            }
+
+            System.out.print("Seleccione una boda (0 para cancelar): ");
+            int opcionBoda = leerEntero();
+
+            if (opcionBoda == 0) {
+                System.out.println("Operación cancelada.");
+                return;
+            }
+
+            if (opcionBoda < 1 || opcionBoda > bodas.size()) {
+                throw new OpcionInvalidaException("Opción inválida. Debe ser entre 1 y " + bodas.size());
+            }
+
+            Boda bodaSeleccionada = bodas.get(opcionBoda - 1);
+
+            // Validar que no se pueda editar boda con proforma aceptada
+            if (bodaSeleccionada.isProformaAceptada()) {
+                throw new EventoConProformaException(
+                        "No se puede editar un evento con proforma aceptada. " +
+                                "Debe cancelar la proforma primero."
+                );
+            }
+
+            boolean seguirEditando = true;
+            while (seguirEditando) {
+                System.out.println("\n=== EDITANDO BODA: " + bodaSeleccionada.getNombreNovios() + " ===");
+                System.out.println("¿Qué desea editar?");
+                System.out.println("1. Fecha del Evento");
+                System.out.println("2. Lugar");
+                System.out.println("3. Tema de Color");
+                System.out.println("4. Horas de Duración");
+                System.out.println("5. Número de Invitados");
+                System.out.println("6. Tipo de Ceremonia");
+                System.out.println("7. Canción del Vals");
+                System.out.println("8. Nombres de los Novios");
+                System.out.println("9. Presupuesto de Comida");
+                System.out.println("10. Presupuesto de Salón");
+                System.out.println("11. Presupuesto de Banda");
+                System.out.println("12. Cancelar edición");
+                System.out.println("13. Guardar y salir");
+                System.out.print("Seleccione una opción: ");
+
+                int opcionEditar = leerEntero();
+
+                switch (opcionEditar) {
+                    case 1:
+                        System.out.println("\nNueva fecha del evento:");
+                        Calendar nuevaFecha = leerFechaConValidacion();
+                        validarFechaNoPasadaConExcepcion(nuevaFecha);
+                        bodaSeleccionada.fechaEvento = nuevaFecha;
+                        System.out.println("✅ Fecha actualizada.");
+                        break;
+
+                    case 2:
+                        System.out.print("\nNuevo lugar: ");
+                        String nuevoLugar = scanner.nextLine();
+                        validarTextoConExcepcion(nuevoLugar, "Lugar");
+                        bodaSeleccionada.lugar = nuevoLugar;
+                        System.out.println("✅ Lugar actualizado.");
+                        break;
+
+                    case 3:
+                        System.out.print("\nNuevo tema de color: ");
+                        String nuevoTema = scanner.nextLine();
+                        validarTextoConExcepcion(nuevoTema, "Tema de color");
+                        bodaSeleccionada.temaColor = nuevoTema;
+                        System.out.println("✅ Tema de color actualizado.");
+                        break;
+
+                    case 4:
+                        System.out.print("\nNuevas horas de duración: ");
+                        int nuevasHoras = leerEnteroPositivo();
+                        validarNumeroPositivoConExcepcion(nuevasHoras, "Horas de duración");
+                        bodaSeleccionada.horasDuracion = nuevasHoras;
+                        System.out.println("✅ Horas de duración actualizadas.");
+                        break;
+
+                    case 5:
+                        System.out.print("\nNuevo número de invitados: ");
+                        int nuevosInvitados = leerEnteroPositivo();
+                        validarNumeroPositivoConExcepcion(nuevosInvitados, "Número de invitados");
+                        bodaSeleccionada.numeroInvitados = nuevosInvitados;
+                        System.out.println("✅ Número de invitados actualizado.");
+                        break;
+
+                    case 6:
+                        System.out.print("\nNuevo tipo de ceremonia: ");
+                        String nuevoTipoCeremonia = scanner.nextLine();
+                        validarTextoConExcepcion(nuevoTipoCeremonia, "Tipo de ceremonia");
+                        bodaSeleccionada.setTipoCeremonia(nuevoTipoCeremonia);
+                        System.out.println("✅ Tipo de ceremonia actualizado.");
+                        break;
+
+                    case 7:
+                        System.out.print("\nNueva canción del vals: ");
+                        String nuevaCancion = scanner.nextLine();
+                        bodaSeleccionada.setCancionVals(nuevaCancion);
+                        System.out.println("✅ Canción del vals actualizada.");
+                        break;
+
+                    case 8:
+                        System.out.print("\nNuevos nombres de los novios: ");
+                        String nuevosNombres = scanner.nextLine();
+                        validarTextoConExcepcion(nuevosNombres, "Nombres de novios");
+                        bodaSeleccionada.setNombreNovios(nuevosNombres);
+                        System.out.println("✅ Nombres de novios actualizados.");
+                        break;
+
+                    case 9:
+                        System.out.print("\nNuevo presupuesto de comida: $");
+                        double nuevoPresupuestoComida = leerDoublePositivo();
+                        validarNumeroNoNegativoConExcepcion(nuevoPresupuestoComida, "Presupuesto comida");
+                        bodaSeleccionada.presupuestoComida = nuevoPresupuestoComida;
+                        System.out.println("✅ Presupuesto de comida actualizado.");
+                        break;
+
+                    case 10:
+                        System.out.print("\nNuevo presupuesto de salón: $");
+                        double nuevoPresupuestoSalon = leerDoublePositivo();
+                        validarNumeroNoNegativoConExcepcion(nuevoPresupuestoSalon, "Presupuesto salón");
+                        bodaSeleccionada.presupuestoSalon = nuevoPresupuestoSalon;
+                        System.out.println("✅ Presupuesto de salón actualizado.");
+                        break;
+
+                    case 11:
+                        System.out.print("\nNuevo presupuesto de banda: $");
+                        double nuevoPresupuestoBanda = leerDoublePositivo();
+                        validarNumeroNoNegativoConExcepcion(nuevoPresupuestoBanda, "Presupuesto banda");
+                        bodaSeleccionada.presupuestoBanda = nuevoPresupuestoBanda;
+                        System.out.println("✅ Presupuesto de banda actualizado.");
+                        break;
+
+                    case 12:
+                        System.out.println("❌ Edición cancelada. No se guardaron cambios.");
+                        return;
+
+                    case 13:
+                        System.out.println("✅ Cambios guardados exitosamente.");
+                        seguirEditando = false;
+                        break;
+
+                    default:
+                        System.out.println("❌ Opción inválida.");
+                }
+            }
+
+        } catch (ValidacionException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+        }
+    }
+
+    public static class ProveedorContratadoException extends ValidacionException {
+        public ProveedorContratadoException(String mensaje) { super(mensaje); }
+    }
+
+    public static class EventoConProformaException extends ValidacionException {
+        public EventoConProformaException(String mensaje) { super(mensaje); }
     }
 
 

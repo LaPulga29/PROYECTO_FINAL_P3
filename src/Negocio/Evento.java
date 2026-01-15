@@ -5,10 +5,10 @@ import java.util.Calendar;
 public abstract class Evento {
     public String id;
     public Calendar fechaEvento;
-    private int horasDuracion;
-    private String lugar;
-    private String temaColor;
-    private int numeroInvitados;
+    public int horasDuracion;
+    public String lugar;
+    public String temaColor;
+    public int numeroInvitados;
     public double presupuestoComida;
     public double presupuestoSalon;
     public double presupuestoBanda;

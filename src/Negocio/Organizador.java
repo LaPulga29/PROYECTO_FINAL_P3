@@ -9,26 +9,25 @@ public class Organizador {
     private String nombre;
     private String especialidad;
     private int añosExperiencia;
-    private String email;  // Separado del teléfono
-    private String telefono; // Separado del email
-    private String tokenSeguridad;
+    private String email;
+    private String telefono;
     private List<Boda> eventosAsociados;
 
+    // Eliminamos el parámetro tokenSeguridad del constructor
     public Organizador(String id, String cedula, String nombre, String especialidad,
-                       int añosExperiencia, String email, String telefono, String tokenSeguridad)
+                       int añosExperiencia, String email, String telefono)
             throws Util.Utilitario.ValidacionException {
         this.id = id;
-        setCedula(cedula);  // Usar setter para validación
+        setCedula(cedula);
         this.nombre = nombre;
         this.especialidad = especialidad;
-        setAñosExperiencia(añosExperiencia);  // Usar setter para validación
-        setEmail(email);  // Usar setter para validación
-        setTelefono(telefono);  // Usar setter para validación
-        this.tokenSeguridad = tokenSeguridad;
+        setAñosExperiencia(añosExperiencia);
+        setEmail(email);
+        setTelefono(telefono);
         this.eventosAsociados = new ArrayList<>();
     }
 
-    // Getters
+    // Getters (eliminar getTokenSeguridad)
     public String getId() { return id; }
     public String getCedula() { return cedula; }
     public String getNombre() { return nombre; }
@@ -36,16 +35,15 @@ public class Organizador {
     public int getAñosExperiencia() { return añosExperiencia; }
     public String getEmail() { return email; }
     public String getTelefono() { return telefono; }
-    public String getTokenSeguridad() { return tokenSeguridad; }
     public List<Boda> getEventosAsociados() { return eventosAsociados; }
 
+    // Setters (sin cambios)
     public void setCedula(String cedula) throws Util.Utilitario.CedulaInvalidaException {
         if (!validarCedula(cedula)) {
             throw new Util.Utilitario.CedulaInvalidaException("Cédula inválida. Debe tener 10 dígitos numéricos.");
         }
         this.cedula = cedula;
     }
-
 
     public void setAñosExperiencia(int añosExperiencia) throws Util.Utilitario.NumeroInvalidoException {
         if (añosExperiencia < 0) {
