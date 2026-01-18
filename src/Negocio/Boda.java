@@ -181,6 +181,8 @@ public class Boda extends Evento {
         this.horasRealesBanda = horasRealesBanda;
     }
 
+
+
     // MÉTODO PARA CALCULAR GASTO TOTAL REAL
     public double getGastoTotalReal() {
         return gastoRealComida + gastoRealSalon + gastoRealBanda;
@@ -229,5 +231,10 @@ public class Boda extends Evento {
     public String toString() {
         return "Boda ID: " + getId() + " - Novios: " + nombreNovios +
                 " - Fecha: " + Util.Utilitario.formatearFecha(getFechaEvento());
+    }
+
+    @Override
+    public void setHorasDuracion(int i) {
+
     }
 }

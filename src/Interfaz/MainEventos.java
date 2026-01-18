@@ -77,6 +77,7 @@ public class MainEventos {
                 System.out.println("❌ ERROR: " + e.getMessage());
             } catch (Exception e) {
                 System.out.println("❌ ERROR INESPERADO: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }

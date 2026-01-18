@@ -646,19 +646,17 @@ public class Utilitario {
             System.out.println("❌ ERROR DE CÉDULA: " + e.getMessage());
         } catch (OrganizadorNoEncontradoException e) {
             System.out.println("❌ ERROR DE AUTENTICACIÓN: " + e.getMessage());
-            System.out.println("\nOrganizadores registrados:");
             if (organizadores.isEmpty()) {
                 System.out.println("No hay organizadores registrados.");
             } else {
                 for (Organizador org : organizadores) {
-                    System.out.println("- " + org.getNombre() + " | Cédula: " + org.getCedula());
+                    System.out.println("Pruebe otra vez");
                 }
             }
         } catch (ValidacionException e) {
             System.out.println("❌ ERROR: " + e.getMessage());
         }
     }
-
 
     public void crearBoda(Organizador organizador) {
         System.out.println("\n=== CREAR NUEVA BODA ===");
