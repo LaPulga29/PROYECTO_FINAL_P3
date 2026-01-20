@@ -13,7 +13,6 @@ public class Organizador {
     private String telefono;
     private List<Boda> eventosAsociados;
 
-    // Eliminamos el parámetro tokenSeguridad del constructor
     public Organizador(String id, String cedula, String nombre, String especialidad,
                        int añosExperiencia, String email, String telefono)
             throws Util.Utilitario.ValidacionException {
@@ -45,6 +44,10 @@ public class Organizador {
         this.cedula = cedula;
     }
 
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
     public void setAñosExperiencia(int añosExperiencia) throws Util.Utilitario.NumeroInvalidoException {
         if (añosExperiencia < 0) {
             throw new Util.Utilitario.NumeroInvalidoException("Los años de experiencia no pueden ser negativos");
@@ -57,6 +60,10 @@ public class Organizador {
             throw new Util.Utilitario.EmailInvalidoException("Email inválido. Debe contener @");
         }
         this.email = email;
+    }
+
+    public void setEspecialidad(String especialidad) {
+        this.especialidad = especialidad;
     }
 
     public void setTelefono(String telefono) throws Util.Utilitario.TelefonoInvalidoException {

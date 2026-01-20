@@ -1,8 +1,5 @@
 package Negocio;
 
-import java.util.ArrayList;
-import java.util.GregorianCalendar;
-
 public class ProveedorSalon extends Proveedor {
     private String ubicacion;
     private int capacidadMaxima;
@@ -15,6 +12,18 @@ public class ProveedorSalon extends Proveedor {
         this.ubicacion = ubicacion;
         this.capacidadMaxima = capacidadMaxima;
         this.costoPorHora = costoPorHora;
+    }
+
+    public void setCapacidadMaxima(int capacidadMaxima) {
+        this.capacidadMaxima = capacidadMaxima;
+    }
+
+    public void setCostoPorHora(double costoPorHora) {
+        this.costoPorHora = costoPorHora;
+    }
+
+    public void setUbicacion(String ubicacion) {
+        this.ubicacion = ubicacion;
     }
 
     @Override

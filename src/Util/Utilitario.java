@@ -6,7 +6,6 @@ import java.util.GregorianCalendar;
 public class Utilitario {
     private static final double IVA = 0.15;
     private static Negocio.Organizador Organizador;
-    private int idProveedorCounter = 2000;
     private int idOrganizadorCounter = 3000;
 
     private List<Organizador> organizadores;
@@ -32,6 +31,10 @@ public class Utilitario {
         public TextoVacioException(String mensaje) { super(mensaje); }
     }
 
+    public static class OrganizadorConEventosException extends ValidacionException {
+        public OrganizadorConEventosException(String mensaje) { super(mensaje); }
+    }
+
     public static class CedulaInvalidaException extends ValidacionException {
         public CedulaInvalidaException(String mensaje) { super(mensaje); }
     }
@@ -47,7 +50,6 @@ public class Utilitario {
     public static class IdDuplicadoException extends ValidacionException {
         public IdDuplicadoException(String mensaje) { super(mensaje); }
     }
-
 
     public static class OrganizadorNoEncontradoException extends ValidacionException {
         public OrganizadorNoEncontradoException(String mensaje) { super(mensaje); }
@@ -239,7 +241,7 @@ public class Utilitario {
         }
     }
 
-    // MÉTODO PARA MOSTRAR EL MENÚ PRINCIPAL
+    // MeTODO PARA MOSTRAR EL MENÚ PRINCIPAL
     public void mostrarMenuPrincipal() {
         System.out.println("\n=== SISTEMA DE GESTIÓN DE BODAS ===");
         System.out.println("1. Gestionar Organizadores");
@@ -251,7 +253,7 @@ public class Utilitario {
         System.out.print("Seleccione una opción: ");
     }
 
-    // MÉTODO PARA LEER ENTEROS CON MANEJO DE ERRORES
+    // MeTODO PARA LEER ENTEROS CON MANEJO DE ERRORES
     public int leerEntero() throws EntradaInvalidaException {
         try {
             String input = scanner.nextLine().trim();
@@ -269,43 +271,92 @@ public class Utilitario {
     }
 
     // MENÚ 1: GESTIONAR ORGANIZADORES
-    public void menuGestionarOrganizadores() throws EntradaInvalidaException {
+    public void menuGestionarOrganizadores() {
         boolean volver = false;
         while (!volver) {
             System.out.println("\n=== GESTIÓN DE ORGANIZADORES ===");
             System.out.println("1. Agregar Organizador");
             System.out.println("2. Buscar Organizador por Nombre");
             System.out.println("3. Mostrar Todos los Organizadores");
-            System.out.println("4. Volver al Menú Principal");
+            System.out.println("4. Editar Organizador");
+            System.out.println("5. Eliminar Organizador");
+            System.out.println("6. Volver al Menú Principal");
             System.out.print("Seleccione una opción: ");
 
-            int opcion = leerEntero();
-            switch (opcion) {
-                case 1:
-                    agregarOrganizador();
-                    break;
-                case 2:
-                    if (organizadores.isEmpty()) {
-                        System.out.println("\n No hay organizadores registrados.");
+            try {
+                int opcion = leerEntero();
+                switch (opcion) {
+                    case 1:
+                        try {
+                            agregarOrganizador();
+                        } catch (Exception e) {
+                            System.out.println("❌ ERROR en agregar organizador: " + e.getMessage());
+                        }
                         break;
-                    }
-                    buscarOrganizadorPorNombre();
-                    break;
-                case 3:
-                    if (organizadores.isEmpty()) {
-                        System.out.println("\n⚠ No hay organizadores registrados.");
+
+                    case 2:
+                        try {
+                            if (organizadores.isEmpty()) {
+                                System.out.println("\n No hay organizadores registrados.");
+                            } else {
+                                buscarOrganizadorPorNombre();
+                            }
+                        } catch (Exception e) {
+                            System.out.println("❌ ERROR en buscar organizador: " + e.getMessage());
+                        }
                         break;
-                    }
-                    mostrarTodosOrganizadores();
-                    break;
-                case 4:
-                    volver = true;
-                    break;
-                default:
-                    System.out.println("Opción inválida.");
+
+                    case 3:
+                        try {
+                            if (organizadores.isEmpty()) {
+                                System.out.println("\n⚠ No hay organizadores registrados.");
+                            } else {
+                                mostrarTodosOrganizadores();
+                            }
+                        } catch (Exception e) {
+                            System.out.println("❌ ERROR en mostrar organizadores: " + e.getMessage());
+                        }
+                        break;
+
+                    case 4:
+                        try {
+                            if (organizadores.isEmpty()) {
+                                System.out.println("\n⚠ No hay organizadores registrados.");
+                            } else {
+                                editarOrganizador();
+                            }
+                        } catch (Exception e) {
+                            System.out.println("❌ ERROR en editar organizador: " + e.getMessage());
+                        }
+                        break;
+
+                    case 5:
+                        try {
+                            if (organizadores.isEmpty()) {
+                                System.out.println("\n⚠ No hay organizadores registrados.");
+                            } else {
+                                eliminarOrganizador();
+                            }
+                        } catch (Exception e) {
+                            System.out.println("❌ ERROR en eliminar organizador: " + e.getMessage());
+                        }
+                        break;
+
+                    case 6:
+                        volver = true;
+                        break;
+
+                    default:
+                        System.out.println("Opción inválida.");
+                }
+            } catch (EntradaInvalidaException e) {
+                System.out.println("❌ ERROR: " + e.getMessage());
+            } catch (Exception e) {
+                System.out.println("❌ ERROR INESPERADO: " + e.getMessage());
             }
         }
     }
+
     private void agregarOrganizador() {
         System.out.println("\n=== AGREGAR ORGANIZADOR ===");
 
@@ -393,18 +444,6 @@ public class Utilitario {
         }
     }
 
-    private Organizador obtenerOrganizadorPorCedula(String cedula) throws OrganizadorNoEncontradoException {
-        for (Organizador org : organizadores) {
-            if (org.getCedula().equals(cedula)) {
-                return org;
-            }
-        }
-        throw new OrganizadorNoEncontradoException(
-                "Organizador con cédula " + cedula + " no encontrado. " +
-                        "Debe estar registrado primero en el sistema."
-        );
-    }
-
     private void buscarOrganizadorPorNombre() {
         System.out.print("\nIngrese el nombre del organizador a buscar: ");
         String nombre = scanner.nextLine();
@@ -466,7 +505,7 @@ public class Utilitario {
             String cedula = scanner.nextLine().trim();
 
             // Validar formato de cédula
-            validarCedulaConExcepcion(cedula, false); // No verificar duplicado
+            validarCedulaConExcepcion(cedula, false);
 
             // Buscar organizador por cédula
             Organizador orgAutenticado = null;
@@ -501,44 +540,72 @@ public class Utilitario {
                     int opcion = leerEntero();
                     switch (opcion) {
                         case 1:
-                            crearBoda(orgAutenticado);
+                            try {
+                                crearBoda(orgAutenticado);
+                            } catch (Exception e) {
+                                System.out.println("❌ ERROR en crear boda: " + e.getMessage());
+                            }
                             break;
+
                         case 2:
-                            if (bodas.isEmpty()) {
-                                System.out.println("\nNo hay bodas registradas.");
-                            } else {
-                                listarBodas();
+                            try {
+                                if (bodas.isEmpty()) {
+                                    System.out.println("\nNo hay bodas registradas.");
+                                } else {
+                                    listarBodas();
+                                }
+                            } catch (Exception e) {
+                                System.out.println("❌ ERROR en listar bodas: " + e.getMessage());
                             }
                             break;
+
                         case 3:
-                            if (bodas.isEmpty()) {
-                                System.out.println("\nNo hay bodas registradas para eliminar.");
-                            } else {
-                                eliminarEvento();
+                            try {
+                                if (bodas.isEmpty()) {
+                                    System.out.println("\nNo hay bodas registradas para eliminar.");
+                                } else {
+                                    eliminarEvento();
+                                }
+                            } catch (Exception e) {
+                                System.out.println("❌ ERROR en eliminar evento: " + e.getMessage());
                             }
                             break;
+
                         case 4:
-                            if (bodas.isEmpty()) {
-                                System.out.println("\nNo hay bodas registradas para buscar.");
-                            } else {
-                                buscarBodaPorFecha();
+                            try {
+                                if (bodas.isEmpty()) {
+                                    System.out.println("\nNo hay bodas registradas para buscar.");
+                                } else {
+                                    buscarBodaPorFecha();
+                                }
+                            } catch (Exception e) {
+                                System.out.println("❌ ERROR en buscar boda: " + e.getMessage());
                             }
                             break;
+
                         case 5:
-                            if (bodas.isEmpty()) {
-                                System.out.println("\nNo hay bodas registradas para editar.");
-                            } else {
-                                editarEvento();
+                            try {
+                                if (bodas.isEmpty()) {
+                                    System.out.println("\nNo hay bodas registradas para editar.");
+                                } else {
+                                    editarEvento();
+                                }
+                            } catch (Exception e) {
+                                System.out.println("❌ ERROR en editar evento: " + e.getMessage());
                             }
                             break;
+
                         case 6:
                             volver = true;
                             break;
+
                         default:
                             System.out.println("Opción inválida.");
                     }
                 } catch (EntradaInvalidaException e) {
                     System.out.println("❌ ERROR: " + e.getMessage());
+                } catch (Exception e) {
+                    System.out.println("❌ ERROR INESPERADO: " + e.getMessage());
                 }
             }
         } catch (CedulaInvalidaException e) {
@@ -555,6 +622,8 @@ public class Utilitario {
             }
         } catch (ValidacionException e) {
             System.out.println("❌ ERROR: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("❌ ERROR INESPERADO: " + e.getMessage());
         }
     }
 
@@ -571,7 +640,7 @@ public class Utilitario {
             String cedula = scanner.nextLine().trim();
 
             // Validar formato de cédula
-            validarCedulaConExcepcion(cedula, false); // No verificar duplicado
+            validarCedulaConExcepcion(cedula, false);
 
             // Buscar organizador por cédula
             Organizador orgAutenticado = null;
@@ -599,47 +668,88 @@ public class Utilitario {
                 System.out.println("3. Eliminar Proveedor");
                 System.out.println("4. Buscar Proveedores por Costo");
                 System.out.println("5. Buscar Proveedores por Tipo");
-                System.out.println("6. Volver al Menú Principal");
+                System.out.println("6. Editar Proveedor");
+                System.out.println("7. Volver al Menú Principal");
                 System.out.print("Seleccione una opción: ");
 
                 try {
                     int opcion = leerEntero();
                     switch (opcion) {
                         case 1:
-                            ingresarProveedor();
+                            try {
+                                ingresarProveedor();
+                            } catch (Exception e) {
+                                System.out.println("❌ ERROR en ingresar proveedor: " + e.getMessage());
+                            }
                             break;
+
                         case 2:
-                            listarProveedores();
+                            try {
+                                listarProveedores();
+                            } catch (Exception e) {
+                                System.out.println("❌ ERROR en listar proveedores: " + e.getMessage());
+                            }
                             break;
+
                         case 3:
-                            if (proveedores.isEmpty()) {
-                                System.out.println("\nNo hay proveedores registrados para eliminar.");
-                            } else {
-                                eliminarProveedor();
+                            try {
+                                if (proveedores.isEmpty()) {
+                                    System.out.println("\nNo hay proveedores registrados para eliminar.");
+                                } else {
+                                    eliminarProveedor();
+                                }
+                            } catch (Exception e) {
+                                System.out.println("❌ ERROR en eliminar proveedor: " + e.getMessage());
                             }
                             break;
+
                         case 4:
-                            if (proveedores.isEmpty()) {
-                                System.out.println("\nNo hay proveedores registrados para buscar.");
-                            } else {
-                                buscarProveedoresPorCosto();
+                            try {
+                                if (proveedores.isEmpty()) {
+                                    System.out.println("\nNo hay proveedores registrados para buscar.");
+                                } else {
+                                    buscarProveedoresPorCosto();
+                                }
+                            } catch (Exception e) {
+                                System.out.println("❌ ERROR en buscar por costo: " + e.getMessage());
                             }
                             break;
+
                         case 5:
-                            if (proveedores.isEmpty()) {
-                                System.out.println("\nNo hay proveedores registrados para buscar.");
-                            } else {
-                                buscarProveedoresPorTipo();
+                            try {
+                                if (proveedores.isEmpty()) {
+                                    System.out.println("\nNo hay proveedores registrados para buscar.");
+                                } else {
+                                    buscarProveedoresPorTipo();
+                                }
+                            } catch (Exception e) {
+                                System.out.println("❌ ERROR en buscar por tipo: " + e.getMessage());
                             }
                             break;
+
                         case 6:
+                            try {
+                                if (proveedores.isEmpty()) {
+                                    System.out.println("\nNo hay proveedores registrados para editar.");
+                                } else {
+                                    editarProveedor();
+                                }
+                            } catch (Exception e) {
+                                System.out.println("❌ ERROR en editar proveedor: " + e.getMessage());
+                            }
+                            break;
+
+                        case 7:
                             volver = true;
                             break;
+
                         default:
                             System.out.println("Opción inválida.");
                     }
                 } catch (EntradaInvalidaException e) {
                     System.out.println("❌ ERROR: " + e.getMessage());
+                } catch (Exception e) {
+                    System.out.println("❌ ERROR INESPERADO: " + e.getMessage());
                 }
             }
         } catch (CedulaInvalidaException e) {
@@ -649,12 +759,15 @@ public class Utilitario {
             if (organizadores.isEmpty()) {
                 System.out.println("No hay organizadores registrados.");
             } else {
+                System.out.println("Organizadores disponibles:");
                 for (Organizador org : organizadores) {
-                    System.out.println("Pruebe otra vez");
+                    System.out.println("- " + org.getNombre() + " | Cédula: " + org.getCedula());
                 }
             }
         } catch (ValidacionException e) {
             System.out.println("❌ ERROR: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("❌ ERROR INESPERADO: " + e.getMessage());
         }
     }
 
@@ -1730,6 +1843,476 @@ public class Utilitario {
         } catch (ValidacionException e) {
             System.out.println("❌ ERROR: " + e.getMessage());
         }
+    }
+
+    public void editarProveedor() {
+        if (proveedores.isEmpty()) {
+            System.out.println("\nNo hay proveedores registrados para editar.");
+            return;
+        }
+
+        System.out.println("\n=== EDITAR PROVEEDOR ===");
+        System.out.println("Seleccione el proveedor a editar:");
+
+        for (int i = 0; i < proveedores.size(); i++) {
+            Proveedor p = proveedores.get(i);
+            System.out.println((i + 1) + ". " + p.getId() +
+                    " - " + p.getNombre() +
+                    " (" + p.getTipoServicio() + ")");
+        }
+
+        System.out.print("Seleccione un proveedor (0 para cancelar): ");
+        int opcionProveedor = 0;
+        try {
+            opcionProveedor = leerEntero();
+        } catch (EntradaInvalidaException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (opcionProveedor == 0) {
+            System.out.println("Operación cancelada.");
+            return;
+        }
+
+        try {
+            if (opcionProveedor < 1 || opcionProveedor > proveedores.size()) {
+                throw new OpcionInvalidaException("Opción inválida. Debe ser entre 1 y " + proveedores.size());
+            }
+        } catch (ValidacionException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+            return;
+        }
+
+        Proveedor proveedorSeleccionado = proveedores.get(opcionProveedor - 1);
+
+        try {
+            // Validar que no se pueda editar proveedor contratado en eventos futuros
+            if (estaProveedorContratadoEnEventosFuturos(proveedorSeleccionado)) {
+                throw new ProveedorContratadoException(
+                        "No se puede editar un proveedor contratado en eventos futuros. " +
+                                "Debe esperar a que los eventos finalicen o cancelar los contratos primero."
+                );
+            }
+        } catch (ProveedorContratadoException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+            return;
+        }
+
+        boolean seguirEditando = true;
+        while (seguirEditando) {
+            System.out.println("\n=== EDITANDO PROVEEDOR: " + proveedorSeleccionado.getNombre() + " ===");
+            System.out.println("¿Qué desea editar?");
+            System.out.println("1. Nombre");
+            System.out.println("2. Teléfono");
+
+            // Opciones específicas por tipo
+            if (proveedorSeleccionado instanceof ProveedorBanda) {
+                System.out.println("3. Costo por hora");
+                System.out.println("4. Géneros musicales");
+            } else if (proveedorSeleccionado instanceof ProveedorComida) {
+                System.out.println("3. Menú");
+                System.out.println("4. Costo por persona");
+                System.out.println("5. Nombre del catering");
+            } else if (proveedorSeleccionado instanceof ProveedorSalon) {
+                System.out.println("3. Ubicación");
+                System.out.println("4. Capacidad máxima");
+                System.out.println("5. Costo por hora");
+            }
+
+            System.out.println("9. Cancelar edición");
+            System.out.println("10. Guardar y salir");
+            System.out.print("Seleccione una opción: ");
+
+            int opcionEditar = 0;
+            try {
+                opcionEditar = leerEntero();
+            } catch (EntradaInvalidaException e) {
+                throw new RuntimeException(e);
+            }
+
+            switch (opcionEditar) {
+                case 1:
+                    try {
+                        System.out.print("\nNuevo nombre: ");
+                        String nuevoNombre = scanner.nextLine();
+                        validarTextoConExcepcion(nuevoNombre, "Nombre");
+                        proveedorSeleccionado.setNombre(nuevoNombre);
+                        System.out.println("✅ Nombre actualizado.");
+                    } catch (ValidacionException e) {
+                        System.out.println("❌ ERROR: " + e.getMessage());
+                    }
+                    break;
+
+                case 2:
+                    String nuevoTelefono = leerTelefonoValido();
+                    proveedorSeleccionado.setTelefono(nuevoTelefono);
+                    System.out.println("✅ Teléfono actualizado.");
+                    break;
+
+                case 3:
+                    try {
+                        if (proveedorSeleccionado instanceof ProveedorBanda) {
+                            System.out.print("\nNuevo costo por hora: $");
+                            double nuevoCostoHora = leerDoublePositivo();
+                            validarNumeroPositivoConExcepcion((int) nuevoCostoHora, "Costo por hora");
+                            ((ProveedorBanda) proveedorSeleccionado).setCostoPorHora(nuevoCostoHora);
+                            System.out.println("✅ Costo por hora actualizado.");
+                        } else if (proveedorSeleccionado instanceof ProveedorComida) {
+                            System.out.print("\nNuevo menú: ");
+                            String nuevoMenu = scanner.nextLine();
+                            validarTextoConExcepcion(nuevoMenu, "Menú");
+                            ((ProveedorComida) proveedorSeleccionado).setNombrePlato(nuevoMenu);
+                            System.out.println("✅ Menú actualizado.");
+                        } else if (proveedorSeleccionado instanceof ProveedorSalon) {
+                            System.out.print("\nNueva ubicación: ");
+                            String nuevaUbicacion = scanner.nextLine();
+                            validarTextoConExcepcion(nuevaUbicacion, "Ubicación");
+                            ((ProveedorSalon) proveedorSeleccionado).setUbicacion(nuevaUbicacion);
+                            System.out.println("✅ Ubicación actualizada.");
+                        }
+                    } catch (ValidacionException e) {
+                        System.out.println("❌ ERROR: " + e.getMessage());
+                    }
+                    break;
+
+                case 4:
+                    try {
+                        if (proveedorSeleccionado instanceof ProveedorBanda) {
+                            System.out.print("\nNuevos géneros (separados por coma): ");
+                            String generosStr = scanner.nextLine();
+                            validarTextoConExcepcion(generosStr, "Géneros musicales");
+                            String[] generos = generosStr.split(",");
+                            for (int i = 0; i < generos.length; i++) {
+                                generos[i] = generos[i].trim();
+                            }
+                            ((ProveedorBanda) proveedorSeleccionado).setGeneros(generos);
+                            System.out.println("✅ Géneros actualizados.");
+                        } else if (proveedorSeleccionado instanceof ProveedorComida) {
+                            System.out.print("\nNuevo costo por persona: $");
+                            double nuevoCostoPersona = leerDoublePositivo();
+                            validarNumeroPositivoConExcepcion((int) nuevoCostoPersona, "Costo por persona");
+                            ((ProveedorComida) proveedorSeleccionado).setCostoPorPersona(nuevoCostoPersona);
+                            System.out.println("✅ Costo por persona actualizado.");
+                        } else if (proveedorSeleccionado instanceof ProveedorSalon) {
+                            System.out.print("\nNueva capacidad máxima: ");
+                            int nuevaCapacidad = leerEnteroPositivo();
+                            validarNumeroPositivoConExcepcion(nuevaCapacidad, "Capacidad máxima");
+                            ((ProveedorSalon) proveedorSeleccionado).setCapacidadMaxima(nuevaCapacidad);
+                            System.out.println("✅ Capacidad máxima actualizada.");
+                        }
+                    } catch (ValidacionException e) {
+                        System.out.println("❌ ERROR: " + e.getMessage());
+                    }
+                    break;
+
+                case 5:
+                    try {
+                        if (proveedorSeleccionado instanceof ProveedorComida) {
+                            System.out.print("\nNuevo nombre del catering: ");
+                            String nuevoCatering = scanner.nextLine();
+                            validarTextoConExcepcion(nuevoCatering, "Nombre del catering");
+                            ((ProveedorComida) proveedorSeleccionado).setNombreCatering(nuevoCatering);
+                            System.out.println("✅ Nombre del catering actualizado.");
+                        } else if (proveedorSeleccionado instanceof ProveedorSalon) {
+                            System.out.print("\nNuevo costo por hora: $");
+                            double nuevoCostoHoraSalon = leerDoublePositivo();
+                            validarNumeroPositivoConExcepcion((int) nuevoCostoHoraSalon, "Costo por hora");
+                            ((ProveedorSalon) proveedorSeleccionado).setCostoPorHora(nuevoCostoHoraSalon);
+                            System.out.println("✅ Costo por hora actualizado.");
+                        }
+                    } catch (ValidacionException e) {
+                        System.out.println("❌ ERROR: " + e.getMessage());
+                    }
+                    break;
+
+                case 9:
+                    System.out.println("❌ Edición cancelada. No se guardaron cambios.");
+                    return;
+
+                case 10:
+                    System.out.println("✅ Cambios guardados exitosamente.");
+                    seguirEditando = false;
+                    break;
+
+                default:
+                    System.out.println("❌ Opción inválida.");
+            }
+        }
+    }
+
+
+    // =============================================
+    // MÉTODOS PARA EDITAR ORGANIZADOR
+    // =============================================
+    public void editarOrganizador() {
+        try {
+            if (organizadores.isEmpty()) {
+                System.out.println("\nNo hay organizadores registrados para editar.");
+                return;
+            }
+
+            System.out.println("\n=== EDITAR ORGANIZADOR ===");
+            System.out.println("Seleccione el organizador a editar:");
+
+            for (int i = 0; i < organizadores.size(); i++) {
+                Organizador org = organizadores.get(i);
+                System.out.println((i + 1) + ". " + org.getCedula() +
+                        " - " + org.getNombre() +
+                        " (" + org.getEventosAsociados().size() + " eventos)");
+            }
+
+            System.out.print("Seleccione un organizador (0 para cancelar): ");
+            int opcionOrganizador = leerEntero();
+
+            if (opcionOrganizador == 0) {
+                System.out.println("Operación cancelada.");
+                return;
+            }
+
+            if (opcionOrganizador < 1 || opcionOrganizador > organizadores.size()) {
+                throw new OpcionInvalidaException("Opción inválida. Debe ser entre 1 y " + organizadores.size());
+            }
+
+            Organizador organizadorSeleccionado = organizadores.get(opcionOrganizador - 1);
+
+            boolean seguirEditando = true;
+            while (seguirEditando) {
+                System.out.println("\n=== EDITANDO ORGANIZADOR: " + organizadorSeleccionado.getNombre() + " ===");
+                System.out.println("¿Qué desea editar?");
+                System.out.println("1. Nombre");
+                System.out.println("2. Especialidad");
+                System.out.println("3. Años de experiencia");
+                System.out.println("4. Email");
+                System.out.println("5. Teléfono");
+                System.out.println("9. Cancelar edición");
+                System.out.println("10. Guardar y salir");
+                System.out.print("Seleccione una opción: ");
+
+                int opcionEditar = leerEntero();
+
+                switch (opcionEditar) {
+                    case 1:
+                        System.out.print("\nNuevo nombre: ");
+                        String nuevoNombre = scanner.nextLine();
+                        validarTextoConExcepcion(nuevoNombre, "Nombre");
+                        organizadorSeleccionado.setNombre(nuevoNombre);
+                        System.out.println("✅ Nombre actualizado.");
+                        break;
+
+                    case 2:
+                        System.out.print("\nNueva especialidad: ");
+                        String nuevaEspecialidad = scanner.nextLine();
+                        validarTextoConExcepcion(nuevaEspecialidad, "Especialidad");
+                        organizadorSeleccionado.setEspecialidad(nuevaEspecialidad);
+                        System.out.println("✅ Especialidad actualizada.");
+                        break;
+
+                    case 3:
+                        System.out.print("\nNuevos años de experiencia: ");
+                        int nuevaExperiencia = leerEntero();
+                        if (nuevaExperiencia < 0) {
+                            throw new NumeroInvalidoException("Los años de experiencia no pueden ser negativos");
+                        }
+                        if (nuevaExperiencia > 50) {
+                            throw new NumeroInvalidoException("Años de experiencia no realistas (máximo 50)");
+                        }
+                        organizadorSeleccionado.setAñosExperiencia(nuevaExperiencia);
+                        System.out.println("✅ Años de experiencia actualizados.");
+                        break;
+
+                    case 4:
+                        String nuevoEmail;
+                        while (true) {
+                            System.out.print("\nNuevo email: ");
+                            nuevoEmail = scanner.nextLine().trim();
+                            try {
+                                validarEmailConExcepcion(nuevoEmail);
+                                organizadorSeleccionado.setEmail(nuevoEmail);
+                                System.out.println("✅ Email actualizado.");
+                                break;
+                            } catch (EmailInvalidoException e) {
+                                System.out.println("❌ " + e.getMessage() + " Intente nuevamente.");
+                            }
+                        }
+                        break;
+
+                    case 5:
+                        String nuevoTelefono;
+                        while (true) {
+                            System.out.print("\nNuevo teléfono (10 dígitos): ");
+                            nuevoTelefono = scanner.nextLine().trim();
+                            try {
+                                validarTelefonoConExcepcion(nuevoTelefono);
+                                organizadorSeleccionado.setTelefono(nuevoTelefono);
+                                System.out.println("✅ Teléfono actualizado.");
+                                break;
+                            } catch (TelefonoInvalidoException e) {
+                                System.out.println("❌ " + e.getMessage() + " Intente nuevamente.");
+                            }
+                        }
+                        break;
+
+                    case 9:
+                        System.out.println("❌ Edición cancelada. No se guardaron cambios.");
+                        return;
+
+                    case 10:
+                        System.out.println("✅ Cambios guardados exitosamente.");
+                        seguirEditando = false;
+                        break;
+
+                    default:
+                        System.out.println("❌ Opción inválida.");
+                }
+            }
+
+        } catch (ValidacionException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+        }
+    }
+
+
+    // =============================================
+// MÉTODO PARA ELIMINAR ORGANIZADOR
+// =============================================
+    public void eliminarOrganizador() {
+        try {
+            if (organizadores.isEmpty()) {
+                System.out.println("\nNo hay organizadores registrados para eliminar.");
+                return;
+            }
+
+            System.out.println("\n=== ELIMINAR ORGANIZADOR ===");
+            System.out.println("Seleccione el organizador a eliminar:");
+
+            for (int i = 0; i < organizadores.size(); i++) {
+                Organizador org = organizadores.get(i);
+                int eventosActivos = 0;
+                Calendar hoy = Calendar.getInstance();
+
+                // Contar eventos futuros o de hoy
+                for (Boda boda : org.getEventosAsociados()) {
+                    if (boda.getFechaEvento().after(hoy) || mismasFechas(boda.getFechaEvento(), hoy)) {
+                        eventosActivos++;
+                    }
+                }
+
+                System.out.println((i + 1) + ". " + org.getCedula() +
+                        " - " + org.getNombre() +
+                        " (" + eventosActivos + " eventos activos)");
+            }
+
+            System.out.print("Seleccione un organizador (0 para cancelar): ");
+            int opcionOrganizador = leerEntero();
+
+            if (opcionOrganizador == 0) {
+                System.out.println("Operación cancelada.");
+                return;
+            }
+
+            if (opcionOrganizador < 1 || opcionOrganizador > organizadores.size()) {
+                throw new OpcionInvalidaException("Opción inválida. Debe ser entre 1 y " + organizadores.size());
+            }
+
+            Organizador organizadorAEliminar = organizadores.get(opcionOrganizador - 1);
+            Calendar hoy = Calendar.getInstance();
+
+            // Verificar si tiene eventos futuros o de hoy
+            List<Boda> eventosActivos = new ArrayList<>();
+            for (Boda boda : organizadorAEliminar.getEventosAsociados()) {
+                if (boda.getFechaEvento().after(hoy) || mismasFechas(boda.getFechaEvento(), hoy)) {
+                    eventosActivos.add(boda);
+                }
+            }
+
+            if (!eventosActivos.isEmpty()) {
+                System.out.println("\n❌ No se puede eliminar el organizador porque tiene eventos activos:");
+                for (Boda boda : eventosActivos) {
+                    System.out.println("   • " + boda.getNombreNovios() +
+                            " - Fecha: " + formatearFecha(boda.getFechaEvento()) +
+                            " (" + (mismasFechas(boda.getFechaEvento(), hoy) ? "HOY" : "FUTURO") + ")");
+                }
+
+                System.out.print("\n¿Desea reasignar los eventos a otro organizador? (S/N): ");
+                String respuesta = scanner.nextLine().trim().toLowerCase();
+
+                if (respuesta.equals("s")) {
+                    // Buscar otro organizador disponible
+                    List<Organizador> otrosOrganizadores = new ArrayList<>();
+                    for (Organizador org : organizadores) {
+                        if (org != organizadorAEliminar) {
+                            otrosOrganizadores.add(org);
+                        }
+                    }
+
+                    if (otrosOrganizadores.isEmpty()) {
+                        System.out.println("❌ No hay otros organizadores disponibles para reasignar.");
+                        return;
+                    }
+
+                    System.out.println("\nSeleccione el organizador al que reasignar los eventos:");
+                    for (int i = 0; i < otrosOrganizadores.size(); i++) {
+                        Organizador org = otrosOrganizadores.get(i);
+                        System.out.println((i + 1) + ". " + org.getNombre() +
+                                " (" + org.getEventosAsociados().size() + " eventos actuales)");
+                    }
+
+                    System.out.print("Opción: ");
+                    int opcionReasignar = leerEntero();
+
+                    if (opcionReasignar < 1 || opcionReasignar > otrosOrganizadores.size()) {
+                        throw new OpcionInvalidaException("Opción inválida.");
+                    }
+
+                    Organizador nuevoOrganizador = otrosOrganizadores.get(opcionReasignar - 1);
+
+                    // Reasignar eventos
+                    for (Boda boda : eventosActivos) {
+                        boda.setOrganizador(nuevoOrganizador);
+                        nuevoOrganizador.agregarEvento(boda);
+                        System.out.println("   ✓ Reasignado: " + boda.getNombreNovios());
+                    }
+
+                    // Ahora sí se puede eliminar el organizador
+                    organizadores.remove(organizadorAEliminar);
+                    System.out.println("\n✅ Organizador eliminado exitosamente. Eventos reasignados a: " +
+                            nuevoOrganizador.getNombre());
+                } else {
+                    throw new OrganizadorConEventosException(
+                            "No se puede eliminar un organizador con eventos activos sin reasignarlos."
+                    );
+                }
+            } else {
+                // Confirmación antes de eliminar
+                System.out.println("\n⚠ ADVERTENCIA: Se eliminará el organizador " +
+                        organizadorAEliminar.getNombre() + " (Cédula: " + organizadorAEliminar.getCedula() + ")");
+                System.out.print("¿Está seguro? (S/N): ");
+                String confirmacion = scanner.nextLine().trim().toLowerCase();
+
+                if (confirmacion.equals("s")) {
+                    organizadores.remove(organizadorAEliminar);
+                    System.out.println("✅ Organizador eliminado exitosamente.");
+                } else {
+                    System.out.println("❌ Operación cancelada.");
+                }
+            }
+
+        } catch (ValidacionException e) {
+            System.out.println("❌ ERROR: " + e.getMessage());
+        }
+    }
+
+    private boolean estaProveedorContratadoEnEventosFuturos(Proveedor proveedor) {
+        Calendar hoy = Calendar.getInstance();
+
+        for (Boda boda : bodas) {
+            if (boda.isProformaAceptada() &&
+                    boda.getProveedoresContratados().contains(proveedor) &&
+                    (boda.getFechaEvento().after(hoy) || mismasFechas(boda.getFechaEvento(), hoy))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static class ProveedorContratadoException extends ValidacionException {

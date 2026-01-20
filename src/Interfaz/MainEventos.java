@@ -7,53 +7,75 @@ public class MainEventos {
     public static void main(String[] args) {
         Utilitario utilitario = new Utilitario();
         EventoEjecutado gestorEventos = new EventoEjecutado();
-
         boolean salir = false;
 
         System.out.println("=== BIENVENIDO AL SISTEMA DE GESTIÓN DE BODAS ===");
 
         while (!salir) {
-            try {
-                utilitario.mostrarMenuPrincipal();
+            utilitario.mostrarMenuPrincipal();
+            int opcion = 0;
+            boolean opcionValida = false;
 
-                int opcion = 0;
-                boolean opcionValida = false;
-
-                // MANEJO DE EXCEPCIÓN PARA ENTRADA INVÁLIDA
-                while (!opcionValida) {
-                    try {
-                        opcion = utilitario.leerEntero();
-                        opcionValida = true;
-                    } catch (Util.Utilitario.EntradaInvalidaException e) {
-                        System.out.println("❌ ERROR: " + e.getMessage() + ". Intente nuevamente.");
-                        System.out.print("Seleccione una opción (1-6): ");
-                    }
+            // MANEJO DE EXCEPCIÓN PARA ENTRADA INVÁLIDA EN LA SELECCIÓN DEL MENÚ
+            while (!opcionValida) {
+                try {
+                    opcion = utilitario.leerEntero();
+                    opcionValida = true;
+                } catch (Util.Utilitario.EntradaInvalidaException e) {
+                    System.out.println("❌ ERROR: " + e.getMessage() + ". Intente nuevamente.");
+                    System.out.print("Seleccione una opción (1-6): ");
                 }
+            }
 
-                switch (opcion) {
-                    case 1:
-                        // MENÚ 1: GESTIÓN DE ORGANIZADORES
+            switch (opcion) {
+                case 1:
+                    // MENÚ 1: GESTIÓN DE ORGANIZADORES
+                    try {
                         utilitario.menuGestionarOrganizadores();
-                        break;
-                    case 2:
-                        // MENÚ 2: GESTIÓN DE EVENTOS
+                    } catch (Exception e) {
+                        System.out.println("❌ ERROR INESPERADO (Gestión Organizadores): " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                    break;
+
+                case 2:
+                    // MENÚ 2: GESTIÓN DE EVENTOS
+                    try {
                         utilitario.menuGestionarEventos();
-                        break;
-                    case 3:
-                        // MENÚ 3: GESTIÓN DE PROVEEDORES
+                    } catch (Exception e) {
+                        System.out.println("❌ ERROR INESPERADO (Gestión Eventos): " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                    break;
+
+                case 3:
+                    // MENÚ 3: GESTIÓN DE PROVEEDORES
+                    try {
                         utilitario.menuGestionarProveedores();
-                        break;
-                    case 4:
-                        // MENÚ 4: GESTIÓN DE PRESUPUESTOS
+                    } catch (Exception e) {
+                        System.out.println("❌ ERROR INESPERADO (Gestión Proveedores): " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                    break;
+
+                case 4:
+                    // MENÚ 4: GESTIÓN DE PRESUPUESTOS
+                    try {
                         if (utilitario.getBodas().isEmpty()) {
                             System.out.println("\n✗ No hay bodas registradas.");
                             System.out.println("Use la opción 2 para crear una boda.");
                             break;
                         }
                         gestorEventos.menuGestionarPresupuestos(utilitario);
-                        break;
-                    case 5:
-                        // MENÚ 5: ANÁLISIS POST-EVENTO
+                    } catch (Exception e) {
+                        System.out.println("❌ ERROR INESPERADO (Gestión Presupuestos): " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                    break;
+
+                case 5:
+                    // MENÚ 5: ANÁLISIS POST-EVENTO
+                    try {
                         if (utilitario.getBodas().isEmpty()) {
                             System.out.println("\n✗ No hay bodas registradas.");
                             System.out.println("Use la opción 2 para crear una boda.");
@@ -65,19 +87,19 @@ public class MainEventos {
                             break;
                         }
                         gestorEventos.menuAnalisisPostEvento(utilitario);
-                        break;
-                    case 6:
-                        salir = true;
-                        System.out.println("¡Gracias por usar el sistema!");
-                        break;
-                    default:
-                        System.out.println("❌ Opción inválida. Ingrese un número del 1 al 6.");
-                }
-            } catch (Util.Utilitario.ValidacionException e) {
-                System.out.println("❌ ERROR: " + e.getMessage());
-            } catch (Exception e) {
-                System.out.println("❌ ERROR INESPERADO: " + e.getMessage());
-                e.printStackTrace();
+                    } catch (Exception e) {
+                        System.out.println("❌ ERROR INESPERADO (Análisis Post-Evento): " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                    break;
+
+                case 6:
+                    salir = true;
+                    System.out.println("¡Gracias por usar el sistema!");
+                    break;
+
+                default:
+                    System.out.println("❌ Opción inválida. Ingrese un número del 1 al 6.");
             }
         }
     }

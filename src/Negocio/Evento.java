@@ -1,5 +1,4 @@
 package Negocio;
-
 import java.util.Calendar;
 
 public abstract class Evento {
@@ -12,7 +11,6 @@ public abstract class Evento {
     public double presupuestoComida;
     public double presupuestoSalon;
     public double presupuestoBanda;
-
     public Evento(String id, Calendar fechaEvento, int horasDuracion,
                   String lugar, String temaColor, int numeroInvitados,
                   double presupuestoComida, double presupuestoSalon, double presupuestoBanda) {

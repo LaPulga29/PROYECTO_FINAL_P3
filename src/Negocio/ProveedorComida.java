@@ -15,7 +15,19 @@ public class ProveedorComida extends Proveedor {
         this.nombreCatering = nombreCatering;
     }
 
-    // Método para calcular costo
+    public void setCostoPorPersona(double costoPorPersona) {
+        this.costoPorPersona = costoPorPersona;
+    }
+
+    public void setNombreCatering(String nombreCatering) {
+        this.nombreCatering = nombreCatering;
+    }
+
+    public void setNombrePlato(String nombrePlato) {
+        this.nombrePlato = nombrePlato;
+    }
+
+    // Metodo para calcular costo
     @Override
     public double calcularCosto(int cantidadPersonas) {
         return costoPorPersona * cantidadPersonas;

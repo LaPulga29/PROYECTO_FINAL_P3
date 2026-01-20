@@ -181,18 +181,15 @@ public class Boda extends Evento {
         this.horasRealesBanda = horasRealesBanda;
     }
 
-
-
-    // MÉTODO PARA CALCULAR GASTO TOTAL REAL
+    // METODO PARA CALCULAR GASTO TOTAL REAL
     public double getGastoTotalReal() {
         return gastoRealComida + gastoRealSalon + gastoRealBanda;
     }
 
-    // MÉTODO PARA CALCULAR PRESUPUESTO TOTAL PLANIFICADO
+    // METODO PARA CALCULAR PRESUPUESTO TOTAL PLANIFICADO
     public double getPresupuestoTotal() {
         return getPresupuestoComida() + getPresupuestoSalon() + getPresupuestoBanda();
     }
-
 
     public void contratarProveedor(Proveedor proveedor) {
         if (!proveedoresContratados.contains(proveedor)) {
